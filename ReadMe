@@ -1,0 +1,3 @@
+This project uses graph search methods like Ford Fulckerson algorithm and the
+idea  of MinCut and MaxFlow to find out if and which teams are mathematically
+eliminated in Baseball games.
