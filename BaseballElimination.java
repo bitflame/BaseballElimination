@@ -4,6 +4,8 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.FlowNetwork;
+import edu.princeton.cs.algs4.FordFulkerson;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdOut;
@@ -16,6 +18,8 @@ public class BaseballElimination {
     private int[] wins, losses, gamesRemaining;
     private int[][] g;
     private Queue<String> certificateList;
+    private FordFulkerson maxFlow;
+    private FlowNetwork flowNetwork;
 
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
@@ -90,15 +94,29 @@ public class BaseballElimination {
     public boolean isEliminated(String team) {
         validateTeam(team);
         int bestScore = 0;
+        int vertices = 0, teamIndex = 0;
         for (int i = 0; i < numberOfTeams(); i++) {
             if (teams[i] == team) {
                 bestScore = wins[i] + gamesRemaining[i];
+                teamIndex = i;
             }
         }
         for (int i = 0; i < numberOfTeams(); i++) {
             if (wins[i] > bestScore) return true;
         }
+        // todo - verify this will give the right value
+        vertices = factorial(numberOfTeams() - 1) + (numberOfTeams() - 1) + 2;
+        flowNetwork = new FlowNetwork(vertices);
+        System.out.println("For: " + numberOfTeams() + " there are " + flowNetwork);
+        // update the weight for game edges
+
+
+        maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V());
         return false;
+    }
+
+    private int factorial(int n) {
+        return (n == 1) ? 1 : n * factorial(n - 1);
     }
     // subset R of teams that eliminates given team; null if not eliminated
 
@@ -116,6 +134,20 @@ public class BaseballElimination {
 
     public static void main(String[] args) {
         BaseballElimination division = new BaseballElimination(args[0]);
+        System.out.println("Should be six: " + division.factorial(3));
+        System.out.println("Should be 24: " + division.factorial(4));
+        System.out.println("Should be 120: " + division.factorial(5));
+
+        int teamSize = 4;
+        int v = division.factorial(teamSize - 1) / 2;
+        System.out.println(v + (teamSize - 1) + 2);
+
+
+        teamSize = 5;
+        v = division.factorial(teamSize - 1) / 2;
+        System.out.println(v + (teamSize - 1) + 2);
+
+
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
