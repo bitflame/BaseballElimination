@@ -131,8 +131,12 @@ public class BaseballElimination {
                     flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j, INFINITY));
                 }
                 if (totalGames + gameCounter < vertices - 1) {
-                    flowNetwork.addEdge(new FlowEdge(totalGames + gameCounter, vertices - 1,
-                                                     bestScore - wins[i]));
+                    if (bestScore-wins[i]<0) {
+                        flowNetwork.addEdge(new FlowEdge(vertices-1, totalGames+gameCounter, bestScore-wins[i]);
+                    } else {
+                        flowNetwork.addEdge(new FlowEdge(totalGames + gameCounter, vertices - 1,
+                                                         bestScore - wins[i]));
+                    }
                 }
                 gameCounter++;
             }
@@ -162,10 +166,10 @@ public class BaseballElimination {
 
     public static void main(String[] args) {
         BaseballElimination division = new BaseballElimination(args[0]);
-        System.out.println("Should be six: " + division.games(3));
+        /*System.out.println("Should be six: " + division.games(3));
         System.out.println("Should be 6: " + division.games(4));
-        System.out.println("Should be 10: " + division.games(5));
-        division.isEliminated("Philadelphia");
+        System.out.println("Should be 10: " + division.games(5));*/
+        division.isEliminated("Toronto");
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
