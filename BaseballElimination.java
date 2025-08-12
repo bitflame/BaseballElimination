@@ -115,8 +115,9 @@ public class BaseballElimination {
         return false;
     }
 
-    private int factorial(int n) {
-        return (n == 1) ? 1 : n * factorial(n - 1);
+    private int games(int teams) {
+        // teams! / 2!(teams -2)!
+        return teams * (teams - 1) / 2;
     }
     // subset R of teams that eliminates given team; null if not eliminated
 
@@ -134,20 +135,9 @@ public class BaseballElimination {
 
     public static void main(String[] args) {
         BaseballElimination division = new BaseballElimination(args[0]);
-        System.out.println("Should be six: " + division.factorial(3));
-        System.out.println("Should be 24: " + division.factorial(4));
-        System.out.println("Should be 120: " + division.factorial(5));
-
-        int teamSize = 4;
-        int v = division.factorial(teamSize - 1) / 2;
-        System.out.println(v + (teamSize - 1) + 2);
-
-
-        teamSize = 5;
-        v = division.factorial(teamSize - 1) / 2;
-        System.out.println(v + (teamSize - 1) + 2);
-
-
+        System.out.println("Should be six: " + division.games(3));
+        System.out.println("Should be 6: " + division.games(4));
+        System.out.println("Should be 10: " + division.games(5));
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
