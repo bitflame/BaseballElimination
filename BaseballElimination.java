@@ -96,7 +96,7 @@ public class BaseballElimination {
     public boolean isEliminated(String team) {
         validateTeam(team);
         int bestScore = 0;
-        int vertices = 0, teamIndex = 0, games = 0;
+        int vertices = 0, teamIndex = 0, totalGames = 0, gameCounter = 1;
         for (int i = 0; i < numberOfTeams(); i++) {
             if (teams[i].equals(team)) {
                 bestScore = wins[i] + gamesRemaining[i];
@@ -107,22 +107,37 @@ public class BaseballElimination {
             if (i == teamIndex) continue;
             if (wins[i] > bestScore) return true;
         }
-        games = games(numberOfTeams() - 1);
-        vertices = games + (numberOfTeams() - 1) + 2;
+        totalGames = games(numberOfTeams() - 1);
+        vertices = totalGames + (numberOfTeams() - 1) + 2;
         flowNetwork = new FlowNetwork(vertices);
         for (int i = 0; i < numberOfTeams(); i++) {
             if (i == teamIndex) continue;
             for (int j = 0; j < numberOfTeams(); j++) {
                 if (j == teamIndex || i >= j) continue;
                 // add an edge from source to each game vertex
-                flowNetwork.addEdge(new FlowEdge(0, i, g[i][j]));
-                // todo - below line and the one after it are wrong, this one will add more than 2 edges from
-                // a game vertex to a team, and the next one will skip some nodes. I think I have to create
-                // another loop
-                flowNetwork.addEdge(new FlowEdge(i, j, INFINITY));
+                flowNetwork.addEdge(new FlowEdge(0, gameCounter, g[i][j]));
+                // if i > teamIndex
+                if (i > teamIndex) {
+                    flowNetwork.addEdge(
+                            new FlowEdge(gameCounter, totalGames + 1 + (i - teamIndex), INFINITY));
+
+                }
+                if (j > teamIndex) {
+                    flowNetwork.addEdge(
+                            new FlowEdge(gameCounter, totalGames + 1 + (j - teamIndex), INFINITY));
+                }
+                else {
+                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
+                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j, INFINITY));
+                }
+                if (totalGames + gameCounter < vertices - 1) {
+                    flowNetwork.addEdge(new FlowEdge(totalGames + gameCounter, vertices - 1,
+                                                     bestScore - wins[i]));
+                }
+                gameCounter++;
             }
-            flowNetwork.addEdge(new FlowEdge(i, vertices, bestScore - wins[i]));
         }
+        assert (gameCounter <= totalGames);
         maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V());
         return false;
     }
