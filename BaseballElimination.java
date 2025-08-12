@@ -112,45 +112,54 @@ public class BaseballElimination {
         flowNetwork = new FlowNetwork(vertices);
         for (int i = 0; i < numberOfTeams(); i++) {
             if (i == teamIndex) continue;
-            for (int j = i; j < numberOfTeams(); j++) {
+            for (int j = i + 1; j < numberOfTeams(); j++) {
                 if (j == teamIndex) continue;
                 // add an edge from source to each game vertex
                 flowNetwork.addEdge(new FlowEdge(0, gameCounter, g[i][j]));
-                // todo - I have to change the weights to type double
+                // todo - I have to  the weights to type double
                 // if i or j or both or neither > teamIndex
                 if (i > teamIndex && j > teamIndex) {
                     flowNetwork.addEdge(
                             new FlowEdge(gameCounter, totalGames + 1 + (i - teamIndex), INFINITY));
-                    flowNetwork.addEdge(
-                            new FlowEdge(gameCounter, totalGames + 1 + (j - teamIndex), INFINITY));
-
-                }
-                else if (j > teamIndex) {
-                    flowNetwork.addEdge(
-                            new FlowEdge(gameCounter, totalGames + 1 + (j - teamIndex), INFINITY));
-                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
+                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + j, INFINITY));
                 }
                 else if (i > teamIndex) {
                     flowNetwork.addEdge(
                             new FlowEdge(gameCounter, totalGames + 1 + (i - teamIndex), INFINITY));
                     flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j, INFINITY));
                 }
+                else if (j > teamIndex) {
+                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
+                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + j, INFINITY));
+                }
                 else {
                     flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
                     flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j, INFINITY));
                 }
-                if (totalGames + gameCounter < vertices - 1) {
-                    if (bestScore - wins[i] < 0) {
-                        flowNetwork.addEdge(new FlowEdge(vertices - 1, totalGames + gameCounter,
-                                                         bestScore - wins[i]));
-                    }
-                    else {
-                        flowNetwork.addEdge(new FlowEdge(totalGames + gameCounter, vertices - 1,
-                                                         bestScore - wins[i]));
-                    }
-                }
                 gameCounter++;
             }
+            if (bestScore - wins[i] < 0) {
+                if (i > teamIndex) {
+                    flowNetwork.addEdge(
+                            new FlowEdge(vertices - 1, totalGames + i, bestScore - wins[i]));
+                }
+                else {
+                    flowNetwork.addEdge(
+                            new FlowEdge(vertices - 1, totalGames + 1 + i, bestScore - wins[i]));
+                }
+
+            }
+            else {
+                if (i > teamIndex) {
+                    flowNetwork.addEdge(
+                            new FlowEdge(totalGames + i, vertices - 1, bestScore - wins[i]));
+                }
+                else {
+                    flowNetwork.addEdge(
+                            new FlowEdge(totalGames + 1 + i, vertices - 1, bestScore - wins[i]));
+                }
+            }
+
         }
         assert (gameCounter <= totalGames);
         maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V() - 1);
