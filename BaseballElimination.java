@@ -4,6 +4,7 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.FlowEdge;
 import edu.princeton.cs.algs4.FlowNetwork;
 import edu.princeton.cs.algs4.FordFulkerson;
 import edu.princeton.cs.algs4.In;
@@ -20,6 +21,7 @@ public class BaseballElimination {
     private Queue<String> certificateList;
     private FordFulkerson maxFlow;
     private FlowNetwork flowNetwork;
+    private final Integer INFINITY = Integer.MAX_VALUE;
 
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
@@ -94,23 +96,33 @@ public class BaseballElimination {
     public boolean isEliminated(String team) {
         validateTeam(team);
         int bestScore = 0;
-        int vertices = 0, teamIndex = 0;
+        int vertices = 0, teamIndex = 0, games = 0;
         for (int i = 0; i < numberOfTeams(); i++) {
-            if (teams[i] == team) {
+            if (teams[i].equals(team)) {
                 bestScore = wins[i] + gamesRemaining[i];
                 teamIndex = i;
             }
         }
         for (int i = 0; i < numberOfTeams(); i++) {
+            if (i == teamIndex) continue;
             if (wins[i] > bestScore) return true;
         }
-        // todo - verify this will give the right value
-        vertices = factorial(numberOfTeams() - 1) + (numberOfTeams() - 1) + 2;
+        games = games(numberOfTeams() - 1);
+        vertices = games + (numberOfTeams() - 1) + 2;
         flowNetwork = new FlowNetwork(vertices);
-        System.out.println("For: " + numberOfTeams() + " there are " + flowNetwork);
-        // update the weight for game edges
-
-
+        for (int i = 0; i < numberOfTeams(); i++) {
+            if (i == teamIndex) continue;
+            for (int j = 0; j < numberOfTeams(); j++) {
+                if (j == teamIndex || i >= j) continue;
+                // add an edge from source to each game vertex
+                flowNetwork.addEdge(new FlowEdge(0, i, g[i][j]));
+                // todo - below line and the one after it are wrong, this one will add more than 2 edges from
+                // a game vertex to a team, and the next one will skip some nodes. I think I have to create
+                // another loop
+                flowNetwork.addEdge(new FlowEdge(i, j, INFINITY));
+            }
+            flowNetwork.addEdge(new FlowEdge(i, vertices, bestScore - wins[i]));
+        }
         maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V());
         return false;
     }
@@ -138,6 +150,7 @@ public class BaseballElimination {
         System.out.println("Should be six: " + division.games(3));
         System.out.println("Should be 6: " + division.games(4));
         System.out.println("Should be 10: " + division.games(5));
+        division.isEliminated("Philadelphia");
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
