@@ -21,7 +21,7 @@ public class BaseballElimination {
     private Queue<String> certificateList;
     private FordFulkerson maxFlow;
     private FlowNetwork flowNetwork;
-    private final Integer INFINITY = Integer.MAX_VALUE;
+    private final Double INFINITY = Double.MAX_VALUE;
 
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
