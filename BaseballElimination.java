@@ -96,7 +96,7 @@ public class BaseballElimination {
     public boolean isEliminated(String team) {
         validateTeam(team);
         int bestScore = 0;
-        int vertices = 0, teamIndex = 0, totalGames = 0, gameCounter = 1;
+        int vertices = 0, teamIndex = 0, totalGames = 0, gameCounter = 1, teamVertex = 0;
         for (int i = 0; i < numberOfTeams(); i++) {
             if (teams[i].equals(team)) {
                 bestScore = wins[i] + gamesRemaining[i];
@@ -112,28 +112,39 @@ public class BaseballElimination {
         flowNetwork = new FlowNetwork(vertices);
         for (int i = 0; i < numberOfTeams(); i++) {
             if (i == teamIndex) continue;
-            for (int j = 0; j < numberOfTeams(); j++) {
-                if (j == teamIndex || i >= j) continue;
+            for (int j = i; j < numberOfTeams(); j++) {
+                if (j == teamIndex) continue;
                 // add an edge from source to each game vertex
                 flowNetwork.addEdge(new FlowEdge(0, gameCounter, g[i][j]));
-                // if i > teamIndex
-                if (i > teamIndex) {
+                // todo - I have to change the weights to type double
+                // if i or j or both or neither > teamIndex
+                if (i > teamIndex && j > teamIndex) {
                     flowNetwork.addEdge(
                             new FlowEdge(gameCounter, totalGames + 1 + (i - teamIndex), INFINITY));
-
-                }
-                if (j > teamIndex) {
                     flowNetwork.addEdge(
                             new FlowEdge(gameCounter, totalGames + 1 + (j - teamIndex), INFINITY));
+
+                }
+                else if (j > teamIndex) {
+                    flowNetwork.addEdge(
+                            new FlowEdge(gameCounter, totalGames + 1 + (j - teamIndex), INFINITY));
+                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
+                }
+                else if (i > teamIndex) {
+                    flowNetwork.addEdge(
+                            new FlowEdge(gameCounter, totalGames + 1 + (i - teamIndex), INFINITY));
+                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j, INFINITY));
                 }
                 else {
                     flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
                     flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j, INFINITY));
                 }
                 if (totalGames + gameCounter < vertices - 1) {
-                    if (bestScore-wins[i]<0) {
-                        flowNetwork.addEdge(new FlowEdge(vertices-1, totalGames+gameCounter, bestScore-wins[i]);
-                    } else {
+                    if (bestScore - wins[i] < 0) {
+                        flowNetwork.addEdge(new FlowEdge(vertices - 1, totalGames + gameCounter,
+                                                         bestScore - wins[i]));
+                    }
+                    else {
                         flowNetwork.addEdge(new FlowEdge(totalGames + gameCounter, vertices - 1,
                                                          bestScore - wins[i]));
                     }
@@ -142,8 +153,11 @@ public class BaseballElimination {
             }
         }
         assert (gameCounter <= totalGames);
-        maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V());
-        return false;
+        maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V() - 1);
+        for (int i = 0; i < numberOfTeams(); i++) {
+            System.out.println(maxFlow.inCut(i) + " is in the minCut wrt Toronto.");
+        }
+        return !maxFlow.inCut(teamIndex);
     }
 
     private int games(int teams) {
