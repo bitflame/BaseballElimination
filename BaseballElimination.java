@@ -23,6 +23,7 @@ public class BaseballElimination {
     private FlowNetwork flowNetwork;
     private final Double INFINITY = Double.MAX_VALUE;
 
+
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
         in = new In(filename);
@@ -96,7 +97,8 @@ public class BaseballElimination {
     public boolean isEliminated(String team) {
         validateTeam(team);
         int bestScore = 0;
-        int vertices = 0, teamIndex = 0, totalGames = 0, gameCounter = 1, teamVertex = 0;
+        int vertices = 0, teamIndex = 0, totalGames = 0, gameCounter = 1;
+
         for (int i = 0; i < numberOfTeams(); i++) {
             if (teams[i].equals(team)) {
                 bestScore = wins[i] + gamesRemaining[i];
@@ -163,10 +165,17 @@ public class BaseballElimination {
         }
         assert (gameCounter <= totalGames);
         maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V() - 1);
-        for (int i = 0; i < numberOfTeams(); i++) {
+        /*for (int i = 0; i < numberOfTeams(); i++) {
             System.out.println(maxFlow.inCut(i) + " is in the minCut wrt Toronto.");
+        }*/
+
+        certificateList = new Queue<>();
+        for (int i = totalGames + 1; i < vertices - 1; i++) {
+            if (maxFlow.inCut(i)) certificateList.enqueue(teams[i - (totalGames + 1)]);
         }
-        return !maxFlow.inCut(teamIndex);
+
+
+        return certificateList.size() > 0;
     }
 
     private int games(int teams) {
@@ -192,7 +201,7 @@ public class BaseballElimination {
         /*System.out.println("Should be six: " + division.games(3));
         System.out.println("Should be 6: " + division.games(4));
         System.out.println("Should be 10: " + division.games(5));*/
-        division.isEliminated("Toronto");
+        // division.isEliminated("Toronto");
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
