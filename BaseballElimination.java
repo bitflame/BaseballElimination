@@ -142,9 +142,19 @@ public class BaseballElimination {
                     flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j, INFINITY));
                 }
                 gameCounter++;
+                /*weight = -(bestScore - wins[i]);
+                if (weight < 0) {
+                    flowNetwork.addEdge(
+                            new FlowEdge(vertices - 1, totalGames + ++otherTeamsIndex, -weight));
+                }
+                else {
+                    flowNetwork.addEdge(
+                            new FlowEdge(totalGames + ++otherTeamsIndex, vertices - 1, weight));
+                }*/
+
             }
-            if ((wins[i] + gamesRemaining[i]) - wins[teamIndex] < 0) {
-                weight = -((wins[i] + gamesRemaining[i]) - wins[teamIndex]);
+            /*if (bestScore - wins[i] < 0) {
+                weight = -(bestScore - wins[i]);
                 if (i > teamIndex) {
                     flowNetwork.addEdge(
                             new FlowEdge(vertices - 1, totalGames + i, weight));
@@ -158,16 +168,25 @@ public class BaseballElimination {
             else {
                 if (i > teamIndex) {
                     flowNetwork.addEdge(new FlowEdge(totalGames + i, vertices - 1,
-                                                     (wins[i] + gamesRemaining[i])
-                                                             - wins[teamIndex]));
+                                                     bestScore
+                                                             - wins[i]));
                 }
                 else {
                     flowNetwork.addEdge(new FlowEdge(totalGames + 1 + i, vertices - 1,
-                                                     (wins[i] + gamesRemaining[i])
-                                                             - wins[teamIndex]));
-                }
-            }
 
+                                                     bestScore - wins[i]));
+                }
+            }*/
+
+        }
+        for (int i = 0; i < numberOfTeams() - 1; i++) {
+            weight = (bestScore - wins[i]);
+            if (weight < 0) {
+                flowNetwork.addEdge(new FlowEdge(vertices - 1, totalGames + 1 + i, -weight));
+            }
+            else {
+                flowNetwork.addEdge(new FlowEdge(totalGames + 1 + i, vertices - 1, weight));
+            }
         }
         assert (gameCounter <= totalGames);
         maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V() - 1);
@@ -181,7 +200,7 @@ public class BaseballElimination {
         }
 
 
-        return certificateList.size() > 0;
+        return !maxFlow.inCut(teamIndex);
     }
 
     private int games(int teams) {
