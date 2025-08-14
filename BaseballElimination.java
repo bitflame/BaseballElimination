@@ -222,17 +222,19 @@ public class BaseballElimination {
             }
         }*/
         // here is an update for the code above
+        boolean eliminated = false;
         for (int i = totalGames + 1; i < vertices; i++) {
             if (maxFlow.inCut(i)) {
                 if (i < teamIndex + totalGames + 1) {
                     certificateList.enqueue(teams[i - (totalGames + 1)]);
                 }
                 else {
-                    certificateList.enqueue(teams[i - totalGames]);
+                    certificateList.enqueue(teams[i - (totalGames + 2)]);
                 }
+                eliminated = true;
             }
         }
-        return certificateList.size() > 1;
+        return eliminated;
     }
 
     private int games(int teams) {
