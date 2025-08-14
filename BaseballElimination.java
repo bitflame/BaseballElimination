@@ -33,6 +33,7 @@ public class BaseballElimination {
         losses = new int[lineItems];
         gamesRemaining = new int[lineItems];
         g = new int[lineItems][lineItems];
+
         for (int i = 0; i < lineItems; i++) {
             teams[i] = in.readString();
             wins[i] = in.readInt();
@@ -87,7 +88,8 @@ public class BaseballElimination {
         validateTeam(team2);
         for (int i = 0; i < numberOfTeams(); i++) {
             for (int j = 0; j < numberOfTeams(); j++) {
-                return g[i][j];
+                if (teams[i].equals(team1) && teams[j].equals(team2)) return g[i][j];
+                else if (teams[i].equals(team2) && teams[j].equals(team1)) return g[i][j];
             }
         }
         return -1;
@@ -121,7 +123,6 @@ public class BaseballElimination {
                 if (j == teamIndex) continue;
                 // add an edge from source to each game vertex
                 flowNetwork.addEdge(new FlowEdge(0, gameCounter, g[i][j]));
-                // todo - I have to  the weights to type double
                 // if i or j or both or neither > teamIndex
                 if (i > teamIndex && j > teamIndex) {
                     flowNetwork.addEdge(
@@ -207,7 +208,7 @@ public class BaseballElimination {
             System.out.println(maxFlow.inCut(i) + " is in the minCut wrt Toronto.");
         }*/
 
-        if (maxFlow.value() > 0) {
+        /*if (maxFlow.value() > 0) {
             for (int i = 0; i < vertices; i++) {
                 if (i >= (totalGames + 1) && maxFlow.inCut(i)) {
                     if (i - (totalGames + 1) >= teamIndex) {
@@ -219,9 +220,18 @@ public class BaseballElimination {
                     }
                 }
             }
+        }*/
+        // here is an update for the code above
+        for (int i = totalGames + 1; i < vertices; i++) {
+            if (maxFlow.inCut(i)) {
+                if (i < teamIndex + totalGames + 1) {
+                    certificateList.enqueue(teams[i - (totalGames + 1)]);
+                }
+                else {
+                    certificateList.enqueue(teams[i - totalGames]);
+                }
+            }
         }
-
-
         return certificateList.size() > 1;
     }
 
@@ -233,6 +243,7 @@ public class BaseballElimination {
 
     public Iterable<String> certificateOfElimination(String team) {
         validateTeam(team);
+        isEliminated(team);
         return certificateList;
     }
 
@@ -245,10 +256,6 @@ public class BaseballElimination {
 
     public static void main(String[] args) {
         BaseballElimination division = new BaseballElimination(args[0]);
-        /*System.out.println("Should be six: " + division.games(3));
-        System.out.println("Should be 6: " + division.games(4));
-        System.out.println("Should be 10: " + division.games(5));*/
-        // division.isEliminated("Toronto");
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
