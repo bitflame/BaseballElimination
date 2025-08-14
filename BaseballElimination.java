@@ -124,6 +124,8 @@ public class BaseballElimination {
                 i++;
                 j++;
             }
+            if (j == teamIndex) j++;
+            flowNetwork.addEdge(new FlowEdge(0, gameCounter, g[i][j]));
             if (i > teamIndex) {
                 flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
                 flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j++, INFINITY));
@@ -155,13 +157,14 @@ public class BaseballElimination {
         assert (gameCounter <= totalGames);
         maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V() - 1);
         boolean eliminated = false;
-        for (i = totalGames + 1; i < vertices; i++) {
+        certificateList = new Queue<>();
+        for (i = totalGames + 2; i < vertices; i++) {
             if (maxFlow.inCut(i)) {
                 if (i < teamIndex + totalGames + 1) {
                     certificateList.enqueue(teams[i - (totalGames + 1)]);
                 }
                 else {
-                    certificateList.enqueue(teams[i - (totalGames + 2)]);
+                    certificateList.enqueue(teams[i - (totalGames + 1)]);
                 }
                 eliminated = true;
             }
