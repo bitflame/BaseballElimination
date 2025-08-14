@@ -99,9 +99,9 @@ public class BaseballElimination {
     public boolean isEliminated(String team) {
         validateTeam(team);
         int bestScore = 0;
-        int vertices = 0, teamIndex = 0, totalGames = 0, gameCounter = 1, weight;
+        int vertices = 0, teamIndex = 0, totalGames = 0, gameCounter = 1, weight, i = 0, j = i + 1;
         certificateList = new Queue<>();
-        for (int i = 0; i < numberOfTeams(); i++) {
+        for (i = 0; i < numberOfTeams(); i++) {
             if (teams[i].equals(team)) {
                 bestScore = wins[i] + gamesRemaining[i];
                 teamIndex = i;
@@ -109,7 +109,7 @@ public class BaseballElimination {
         }
         totalGames = games(numberOfTeams() - 1);
         vertices = totalGames + (numberOfTeams() - 1) + 2;
-        for (int i = 0; i < numberOfTeams(); i++) {
+        for (i = 0; i < numberOfTeams(); i++) {
             if (i == teamIndex) continue;
             if (wins[i] > bestScore) {
                 certificateList.enqueue(teams[i]);
@@ -117,72 +117,16 @@ public class BaseballElimination {
             }
         }
         flowNetwork = new FlowNetwork(vertices);
-        for (int i = 0; i < numberOfTeams(); i++) {
-            if (i == teamIndex) continue;
-            for (int j = i + 1; j < numberOfTeams(); j++) {
-                if (j == teamIndex) continue;
-                // add an edge from source to each game vertex
-                flowNetwork.addEdge(new FlowEdge(0, gameCounter, g[i][j]));
-                // if i or j or both or neither > teamIndex
-                if (i > teamIndex && j > teamIndex) {
-                    flowNetwork.addEdge(
-                            new FlowEdge(gameCounter, totalGames + 1 + (i - teamIndex), INFINITY));
-                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + j, INFINITY));
-                }
-                else if (i > teamIndex) {
-                    flowNetwork.addEdge(
-                            new FlowEdge(gameCounter, totalGames + 1 + (i - teamIndex), INFINITY));
-                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j, INFINITY));
-                }
-                else if (j > teamIndex) {
-                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
-                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + j, INFINITY));
-                }
-                else {
-                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
-                    flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j, INFINITY));
-                }
-                gameCounter++;
-                /*weight = -(bestScore - wins[i]);
-                if (weight < 0) {
-                    flowNetwork.addEdge(
-                            new FlowEdge(vertices - 1, totalGames + ++otherTeamsIndex, -weight));
-                }
-                else {
-                    flowNetwork.addEdge(
-                            new FlowEdge(totalGames + ++otherTeamsIndex, vertices - 1, weight));
-                }*/
-
+        i = 0;
+        j = i + 1;
+        while (gameCounter <= totalGames) {
+            if (i == teamIndex) {
+                i++;
+                j++;
             }
-            /*if (bestScore - wins[i] < 0) {
-                weight = -(bestScore - wins[i]);
-                if (i > teamIndex) {
-                    flowNetwork.addEdge(
-                            new FlowEdge(vertices - 1, totalGames + i, weight));
-                }
-                else {
-                    flowNetwork.addEdge(
-                            new FlowEdge(vertices - 1, totalGames + 1 + i, weight));
-                }
-
-            }
-            else {
-                if (i > teamIndex) {
-                    flowNetwork.addEdge(new FlowEdge(totalGames + i, vertices - 1,
-                                                     bestScore
-                                                             - wins[i]));
-                }
-                else {
-                    flowNetwork.addEdge(new FlowEdge(totalGames + 1 + i, vertices - 1,
-
-                                                     bestScore - wins[i]));
-                }
-            }*/
-
-        }
-        for (int i = 0; i < numberOfTeams(); i++) {
-            if (i == teamIndex) continue;
             if (i > teamIndex) {
+                flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
+                flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j++, INFINITY));
                 weight = (bestScore - wins[i]);
                 if (weight < 0) {
                     flowNetwork.addEdge(new FlowEdge(vertices - 1, totalGames + i, -weight));
@@ -192,6 +136,8 @@ public class BaseballElimination {
                 }
             }
             else {
+                flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
+                flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j++, INFINITY));
                 weight = (bestScore - wins[i]);
                 if (weight < 0) {
                     flowNetwork.addEdge(new FlowEdge(vertices - 1, totalGames + 1 + i, -weight));
@@ -200,30 +146,16 @@ public class BaseballElimination {
                     flowNetwork.addEdge(new FlowEdge(totalGames + 1 + i, vertices - 1, weight));
                 }
             }
-
+            if (j == g.length) {
+                i++;
+                j = i + 1;
+            }
+            gameCounter++;
         }
         assert (gameCounter <= totalGames);
         maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V() - 1);
-        /*for (int i = 0; i < numberOfTeams(); i++) {
-            System.out.println(maxFlow.inCut(i) + " is in the minCut wrt Toronto.");
-        }*/
-
-        /*if (maxFlow.value() > 0) {
-            for (int i = 0; i < vertices; i++) {
-                if (i >= (totalGames + 1) && maxFlow.inCut(i)) {
-                    if (i - (totalGames + 1) >= teamIndex) {
-                        certificateList.enqueue(teams[i - (totalGames)]);
-                    }
-                    else {
-                        // teamIndex must be larger
-                        certificateList.enqueue(teams[i - (totalGames + 1)]);
-                    }
-                }
-            }
-        }*/
-        // here is an update for the code above
         boolean eliminated = false;
-        for (int i = totalGames + 1; i < vertices; i++) {
+        for (i = totalGames + 1; i < vertices; i++) {
             if (maxFlow.inCut(i)) {
                 if (i < teamIndex + totalGames + 1) {
                     certificateList.enqueue(teams[i - (totalGames + 1)]);
