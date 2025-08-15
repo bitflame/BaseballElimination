@@ -127,21 +127,24 @@ public class BaseballElimination {
                 j++;
             }
             if (j == teamIndex) j++;
-            if (j >= g.length) break;
+            if (j >= g.length) {
+                i++;
+                j = i + 1;
+            }
             flowNetwork.addEdge(new FlowEdge(0, gameCounter, g[i][j]));
             if (i > teamIndex) {
                 flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + i, INFINITY));
+                flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + j++, INFINITY));
+            }
+            else if (j > teamIndex) {
+                flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
                 flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + j++, INFINITY));
             }
             else {
                 flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + i, INFINITY));
                 flowNetwork.addEdge(new FlowEdge(gameCounter, totalGames + 1 + j++, INFINITY));
             }
-            if (j == g.length) {
 
-                i++;
-                j = i + 1;
-            }
             if (teamCounter < vertices - 1) {
                 if (potentialWinnerIndex == teamIndex) potentialWinnerIndex++;
                 weight = (bestScore - wins[potentialWinnerIndex++]);
@@ -153,19 +156,17 @@ public class BaseballElimination {
                 }
             }
             gameCounter++;
+
         }
-        assert (gameCounter <= totalGames);
         maxFlow = new FordFulkerson(flowNetwork, 0, flowNetwork.V() - 1);
         boolean eliminated = false;
         certificateList = new Queue<>();
+        int counter;
         for (i = totalGames + 1; i < vertices; i++) {
             if (maxFlow.inCut(i)) {
-                if ((i - (totalGames + 1)) >= teamIndex) {
-                    certificateList.enqueue(teams[i - (totalGames)]);
-                }
-                else {
-                    certificateList.enqueue(teams[i - (totalGames)]);
-                }
+                counter = i - (totalGames + 1);
+                if (counter >= teamIndex) counter++;
+                certificateList.enqueue(teams[counter]);
                 eliminated = true;
             }
         }
@@ -173,7 +174,6 @@ public class BaseballElimination {
     }
 
     private int games(int teams) {
-        // teams! / 2!(teams -2)!
         return teams * (teams - 1) / 2;
     }
     // subset R of teams that eliminates given team; null if not eliminated

@@ -4,7 +4,12 @@
  *  Description:
  **************************************************************************** */
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 
 class BaseballEliminationTest {
     BaseballElimination division;
@@ -19,6 +24,41 @@ class BaseballEliminationTest {
 
     @org.junit.jupiter.api.Test
     void against() {
+    }
+
+    @org.junit.jupiter.api.Test
+    void certificateOfEliminationRsultsTeam5aDetroit() {
+        division = new BaseballElimination("teams5a.txt");
+        Iterable<String> result = division.certificateOfElimination("Detroit");
+        List<String> teams = new ArrayList<>();
+        for (String s : result) teams.add(s);
+        assertEquals(4, teams.size());
+        assertTrue(teams.contains("Boston"));
+        assertTrue(teams.contains("New_York"));
+        assertTrue(teams.contains("Toronto"));
+        assertTrue(teams.contains("Baltimore"));
+    }
+
+    @org.junit.jupiter.api.Test
+    void certificateOfEliminationRsultsTeam4Phili() {
+        division = new BaseballElimination("teams4.txt");
+        Iterable<String> result = division.certificateOfElimination("Philadelphia");
+        List<String> teams = new ArrayList<>();
+        for (String s : result) teams.add(s);
+        assertEquals(2, teams.size());
+        assertTrue(teams.contains("Atlanta"));
+        assertTrue(teams.contains("New_York"));
+    }
+
+    @org.junit.jupiter.api.Test
+    void certificateOfEliminationRsultsTeam4aGhaddafi() {
+        division = new BaseballElimination("teams4a.txt");
+        Iterable<String> result = division.certificateOfElimination("Ghaddafi");
+        List<String> teams = new ArrayList<>();
+        for (String s : result) teams.add(s);
+        assertEquals(2, teams.size());
+        assertTrue(teams.contains("CIA"));
+        assertTrue(teams.contains("Obama"));
     }
 
     @org.junit.jupiter.api.Test
